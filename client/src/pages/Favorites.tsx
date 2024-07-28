@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { fetchMovieDetails } from '../services/movieService';
+import { fetchMovieDetails, fetchGenres } from '../services/movieService';
 import MovieCard from '../components/MovieCard';
 
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [genres, setGenres] = useState<any[]>([]);
 
   useEffect(() => {
+    const fetchInitialData = async () => {
+      const genreData = await fetchGenres();
+      setGenres(genreData);
+    };
+
+    fetchInitialData();
+
     const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]').filter(Boolean);
     console.log('Saved favorites:', savedFavorites);
 
@@ -41,6 +49,7 @@ const Favorites: React.FC = () => {
           movie={movie}
           isFavorite={true}
           toggleFavorite={removeFavorite}
+          genres={genres}
         />
       ))}
     </div>

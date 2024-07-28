@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { fetchMoviesByPage, fetchGenres } from '../services/movieService';
 import MovieCard from '../components/MovieCard';
 
-const Home: React.FC = () => {
+interface HomeProps {
+  searchedMovies: any[];
+}
+
+const Home: React.FC<HomeProps> = ({ searchedMovies }) => {
   const [movies, setMovies] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -26,15 +30,19 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-      const data = await fetchMoviesByPage(page, filter);
-      setMovies(prevMovies => (page === 1 ? data.results : [...prevMovies, ...data.results]));
-      setTotalResults(data.total_results);
-      setLoading(false);
-    };
-    fetchMovies();
-  }, [page, filter]);
+    if (searchedMovies.length === 0) {
+      const fetchMovies = async () => {
+        setLoading(true);
+        const data = await fetchMoviesByPage(page, filter);
+        setMovies(prevMovies => (page === 1 ? data.results : [...prevMovies, ...data.results]));
+        setTotalResults(data.total_results);
+        setLoading(false);
+      };
+      fetchMovies();
+    } else {
+      setMovies(searchedMovies);
+    }
+  }, [page, filter, searchedMovies]);
 
   useEffect(() => {
     const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -55,7 +63,7 @@ const Home: React.FC = () => {
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilter({ ...filter, [name]: value });
-    setPage(1);
+    setPage(1); 
   };
 
   const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -117,7 +125,7 @@ const Home: React.FC = () => {
         <div className="movies-container">
           {filteredMovies.map((movie, index) => (
             <MovieCard
-              key={`${movie.id}-${index}`}
+              key={`${movie.id}-${index}`} 
               movie={movie}
               isFavorite={favorites.includes(movie.id)}
               toggleFavorite={toggleFavorite}

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_KEY = '55d35f3b59c4c3c466fa966523151399';
+const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 interface Movie {
@@ -19,6 +19,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onMoviesFound }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Movie[]>([]);
 
+  const memoizedOnMoviesFound = useCallback(onMoviesFound, []);
+
   useEffect(() => {
     if (query.length > 0) {
       const fetchMovies = async () => {
@@ -29,15 +31,15 @@ const SearchBar: React.FC<SearchBarProps> = ({ onMoviesFound }) => {
           },
         });
         setResults(response.data.results);
-        onMoviesFound(response.data.results);
+        memoizedOnMoviesFound(response.data.results);
       };
 
       fetchMovies();
     } else {
       setResults([]);
-      onMoviesFound([]);
+      memoizedOnMoviesFound([]);
     }
-  }, [query, onMoviesFound]);
+  }, [query, memoizedOnMoviesFound]);
 
   return (
     <div className="search-bar">

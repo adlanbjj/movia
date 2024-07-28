@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { fetchMoviesByPage, fetchGenres } from '../services/movieService';
 import MovieCard from '../components/MovieCard';
 
@@ -49,25 +49,24 @@ const Home: React.FC<HomeProps> = ({ searchedMovies }) => {
     setFavorites(savedFavorites);
   }, []);
 
-  const toggleFavorite = (id: string) => {
-    let updatedFavorites;
-    if (favorites.includes(id)) {
-      updatedFavorites = favorites.filter(favId => favId !== id);
-    } else {
-      updatedFavorites = [...favorites, id];
-    }
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-  };
+  const toggleFavorite = useCallback((id: string) => {
+    setFavorites(prevFavorites => {
+      const updatedFavorites = prevFavorites.includes(id)
+        ? prevFavorites.filter(favId => favId !== id)
+        : [...prevFavorites, id];
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      return updatedFavorites;
+    });
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFilter({ ...filter, [name]: value });
+    setFilter(prevFilter => ({ ...prevFilter, [name]: value }));
     setPage(1); 
   };
 
   const handleGenreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilter({ ...filter, genre: e.target.value });
+    setFilter(prevFilter => ({ ...prevFilter, genre: e.target.value }));
     setPage(1);
   };
 
